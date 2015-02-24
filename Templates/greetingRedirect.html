@@ -1,0 +1,8 @@
+{{define "greetingRedirectTemplate"}}
+<head><title></title>
+<script type="text/javascript">
+    var redirectURL = "http://localhost:" + {{.PortNum}} + "/index.html"
+    window.location = redirectURL
+</script>
+</head>
+{{end}}

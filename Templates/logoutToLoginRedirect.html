@@ -1,0 +1,13 @@
+{{define "loginRedirectTemplate"}}
+<head><title></title>
+    Good-Bye!
+<script type="text/javascript">
+    function redirectToLogin() {
+        var redirectURL = "http://localhost:" + {{.PortNum}} + "/login";
+        window.location = redirectURL;
+    }
+
+    setTimeout(redirectToLogin, 10000);
+</script>
+</head>
+{{end}}

@@ -1,0 +1,13 @@
+    <seelog type="adaptive" mininterval="2000000" maxinterval="100000000" critmsgcount="500" minlevel="debug">
+        <exceptions>
+            <exception filepattern="test*" minlevel="error"/>
+        </exceptions>
+        <outputs formatid="all">
+            <filter levels="critical, error, warn, debug, info, trace" formatid="filefmt">
+              <file path="logFile.log"/>
+            </filter>
+        </outputs>
+        <formats>
+            <format id="filefmt" format="[%Date %Time]		[%LEVEL]	[%File %Function %Line]		%Msg%n"/>
+            <format id="all" format="[%Date %Time]		[%LEVEL]	[%File %Function %Line]		%Msg%n"/>
+        </formats>
