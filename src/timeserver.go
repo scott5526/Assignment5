@@ -19,11 +19,11 @@ Log "./seelog-master"
 "html/template"
 "math/rand"
 "net/http"
-"sync"
 "os"
 //"os/exec"
 "strconv"
 "strings"
+"sync"
 "time"
 )
 
@@ -67,7 +67,7 @@ func greetingRedirect1(w http.ResponseWriter, r *http.Request) {
 	return
     }
 
-    fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/")
+    //fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/")
 
     if  printToFile == 1 { //Check if the p2f flag is set
 	defer Log.Flush()
@@ -84,7 +84,7 @@ Redirects to greetingHandler with a saved URL "/index.html"
 */
 
 func greetingRedirect2(w http.ResponseWriter, r *http.Request) {
-    fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/index.html")
+    //fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/index.html")
 
     if  printToFile == 1 { //Check if the p2f flag is set
 	defer Log.Flush()
@@ -125,7 +125,7 @@ Creates a cookie for the user name and redirects them to the home page if a vali
 If no valid user name was provided, outputs an error message
 */
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-    fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/login")
+    //fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/login")
 
     if  printToFile == 1 { //Check if the p2f flag is set
 	defer Log.Flush()
@@ -156,7 +156,7 @@ Logout handler.
 Clears user cookie, displays goodbye message for 10 seconds, then redirects user to login form
 */
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
-   fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/logout")
+   //fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/logout")
 
     if  printToFile == 1 { //Check if the p2f flag is set
 	defer Log.Flush()
@@ -204,7 +204,7 @@ Outputs the current time in the format:
 Hour:Minute:Second PM/AM
 */
 func timeHandler(w http.ResponseWriter, r *http.Request) {
-    fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/time")
+    //fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/time")
 
     if  printToFile == 1 { //Check if the p2f flag is set
 	defer Log.Flush()
@@ -249,7 +249,7 @@ func timeHandler(w http.ResponseWriter, r *http.Request) {
     } 
 
     if runDelay {
-	time.Sleep(time.Duration(generateDelay())*(time.Second/1000))
+	time.Sleep(time.Duration(int(generateDelay()))*(time.Millisecond))
     }
     
     newTemplate.ExecuteTemplate(w,"timeTemplate",currTimeInfo)
@@ -261,7 +261,7 @@ Menu handler.
 Displays menu consisting of Home, Time, Logout, and About us
 */
 func menuHandler(w http.ResponseWriter, r *http.Request) {
-   fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/menu")
+   //fmt.Println("localhost:" + strconv.Itoa(*portNO) + "/menu")
 
    if  printToFile == 1 { //Check if p2f flag is set
 	defer Log.Flush()
@@ -306,6 +306,12 @@ func badHandler(w http.ResponseWriter, r *http.Request) {
 Handler for all incoming connections
 */
 func mainHandler (w http.ResponseWriter, r *http.Request) {
+    if currentRequests >= *maxRequests && isRequestMax {	
+    	w.WriteHeader(500)
+        w.Write([]byte("Internal Service Error"))
+	return
+    }
+
     if isRequestMax {
 	mutex.Lock()
 	currentRequests += 1
@@ -314,6 +320,7 @@ func mainHandler (w http.ResponseWriter, r *http.Request) {
 	if currentRequests > *maxRequests {	
     	    w.WriteHeader(500)
             w.Write([]byte("Internal Service Error"))
+	    return
         }
     }
 
@@ -341,18 +348,23 @@ func mainHandler (w http.ResponseWriter, r *http.Request) {
 /*
 Generates a random relay based on the standard deviation & average response time flags
 */
-func generateDelay() int {
+func generateDelay() float32 {
     deviation := (rand.Int() % 1000) + 1
-    change := ((rand.Int() % 100) + 1) / 100
-    change = change * *standardDeviation
+
+    var change float32
+    change = float32((rand.Int() % 100) + 1) / float32(100.00)
+    change = change * float32(*standardDeviation)
+
     addorMinus := rand.Int() % 2
-    delay := 0
+    
+    var delay float32
+    delay = 0
 
     if deviation < 682 { //within 1st standard deviation of avg
 	if addorMinus == 0 { // add
-	    delay = *avgResponse + change
+	    delay = float32(*avgResponse) + change
         } else { // minus
-	    delay = *avgResponse - change
+	    delay = float32(*avgResponse) - change
 
 	    if delay < 0 {
 		delay = 0
@@ -360,9 +372,9 @@ func generateDelay() int {
         }
     } else if deviation < 958 { //within 2nd standard deviation of avg
 	if addorMinus == 0 { // add
-	    delay = *avgResponse + *standardDeviation + change
+	    delay = float32(*avgResponse) + float32(*standardDeviation) + change
         } else { // minus
-	    delay = *avgResponse - *standardDeviation - change
+	    delay = float32(*avgResponse) - float32(*standardDeviation) - change
 
 	    if delay < 0 {
 		delay = 0
@@ -370,16 +382,15 @@ func generateDelay() int {
         }
     } else { //within 3rd standard deviation of avg
 	if addorMinus == 0 { // add
-	    delay = *avgResponse + (*standardDeviation * 2) + change
+	    delay = float32(*avgResponse) + float32(*standardDeviation * 2) + change
         } else { // minus
-	    delay = *avgResponse - (*standardDeviation * 2) - change
+	    delay = float32(*avgResponse) - float32(*standardDeviation * 2) - change
 
 	    if delay < 0 {
 		delay = 0
 	    }
         }
     }
-
     return delay
 }
 
@@ -390,7 +401,7 @@ func main() {
     fmt.Println("Starting new server")
 
     //Version output & port selection
-    version := flag.Bool("V", false, "Version 5.0") //Create a bool flag for version  
+    version := flag.Bool("V", false, "Version 5.1") //Create a bool flag for version  
     						    //and default to no false
 
     portNO = flag.Int("port", 8080, "")	    	    //Create a int flag for port selection
@@ -402,7 +413,7 @@ func main() {
 
     logPath := flag.String("log", "../etc/seelog.xml", "")
 
-    timeout = flag.Int("authtimeout-ms", 2000, "")
+    timeout = flag.Int("authtimeout-ms", 10000, "")
 
     authport = flag.Int("authport", 9090, "")
 
@@ -426,7 +437,7 @@ func main() {
     flag.Parse()
 
     if *version == true {		//If version outputting selected, output version and 
-        fmt.Println("Version 5.0")	//terminate program with 0 error code
+        fmt.Println("Version 5.1")	//terminate program with 0 error code
         os.Exit(0)
     }
 

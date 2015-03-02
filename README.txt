@@ -31,6 +31,7 @@ http://stackoverflow.com/questions/9985559/organizing-a-multiple-file-go-project
 https://github.com/cihub/seelog/blob/master/doc.go#L57
 http://stackoverflow.com/questions/26611918/golang-postform-request-for-updating-one-of-the-resources-of-cloudfoundry-app
 https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Forms_in_HTML
+https://mmcgrana.github.io/2012/09/go-by-example-timers-and-tickers.html
 chrome://settings/cookies
 ---------------------------------------------------------------------------------------------
 
