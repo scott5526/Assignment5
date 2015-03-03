@@ -11,6 +11,7 @@ package main
 
 import (
 Log "../seelog-master"
+counter "../counter"
 "flag"
 "fmt"
 //"html/template"
@@ -18,7 +19,7 @@ Log "../seelog-master"
 "net/http"
 "os"
 //"os/exec"
-"strconv"
+//"strconv"
 //"strings"
 "sync"
 "time"
@@ -33,6 +34,7 @@ var P2F int
 
 var mutex = &sync.Mutex{}
 var requestCodeMap = make(map[string]int)
+var Counter *counter.Counter
 
 /*
 Setup for time.Ticker.  Runs infinitely and generates a burst of "requestBurst" concurrentrequests 
@@ -55,9 +57,7 @@ Generates a request to the specified timeserver URL and records the response cod
 will be logged as an error code as well.
 */
 func generateRequest() {
-    mutex.Lock()
-    requestCodeMap["total"] = requestCodeMap["total"] + 1
-    mutex.Unlock()
+    Counter.Increment("Total")
 
     //credits to http://blog.golang.org/go-concurrency-patterns-timing-out-and
     getTimeout := make(chan bool, 1)
@@ -88,7 +88,8 @@ func generateRequest() {
     select {
 	case <-getTimeout:
 	    mutex.Lock()
-	    requestCodeMap["error"] = requestCodeMap["error"] + 1
+	    //requestCodeMap["error"] = requestCodeMap["error"] + 1
+	    Counter.Increment("Errors")
 	    mutex.Unlock()
 	    return
 	case <-timeResp:
@@ -97,23 +98,28 @@ func generateRequest() {
     codeCentury := respCode / 100
     if codeCentury == 1 {
 	mutex.Lock()
-	requestCodeMap["100"] = requestCodeMap["100"] + 1
+	//requestCodeMap["100"] = requestCodeMap["100"] + 1
+	Counter.Increment("100s")
 	mutex.Unlock()
     } else if codeCentury == 2 {
 	mutex.Lock()
-	requestCodeMap["200"] = requestCodeMap["200"] + 1
+	//requestCodeMap["200"] = requestCodeMap["200"] + 1
+	Counter.Increment("200s")
 	mutex.Unlock()
     } else if codeCentury == 3 {
 	mutex.Lock()
-	requestCodeMap["300"] = requestCodeMap["300"] + 1
+	//requestCodeMap["300"] = requestCodeMap["300"] + 1
+	Counter.Increment("300s")
 	mutex.Unlock()
     } else if codeCentury == 4 {
 	mutex.Lock()
-	requestCodeMap["400"] = requestCodeMap["400"] + 1   
+	//requestCodeMap["400"] = requestCodeMap["400"] + 1  
+	Counter.Increment("400s") 
 	mutex.Unlock()
     } else if codeCentury == 5 {
 	mutex.Lock()
-	requestCodeMap["500"] = requestCodeMap["500"] + 1   
+	//requestCodeMap["500"] = requestCodeMap["500"] + 1  
+	Counter.Increment("500s") 
 	mutex.Unlock()
     }
 
@@ -122,7 +128,7 @@ func generateRequest() {
 /*
 Output the number of 100/200/300/400/500/error codes received to the console.
 */
-func outputStatistics() {
+func outputStatistics() {/*
     fmt.Println("Total Requests: " + strconv.Itoa(requestCodeMap["total"]))
     fmt.Println("100 Status Code Count: " + strconv.Itoa(requestCodeMap["100"]))
     fmt.Println("200 Status Code Count: " + strconv.Itoa(requestCodeMap["200"]))
@@ -130,6 +136,15 @@ func outputStatistics() {
     fmt.Println("400 Status Code Count: " + strconv.Itoa(requestCodeMap["400"]))
     fmt.Println("500 Status Code Count: " + strconv.Itoa(requestCodeMap["500"]))
     fmt.Println("408 (Request Timeout) Status Code Count: " + strconv.Itoa(requestCodeMap["error"]))
+    */
+
+    fmt.Println(Counter.OutputKey("Total"))
+    fmt.Println(Counter.OutputKey("100s"))
+    fmt.Println(Counter.OutputKey("200s"))
+    fmt.Println(Counter.OutputKey("300s"))
+    fmt.Println(Counter.OutputKey("400s"))
+    fmt.Println(Counter.OutputKey("500s"))
+    fmt.Println(Counter.OutputKey("Errors"))
 }
 
 /*
@@ -137,13 +152,15 @@ Main
 */
 func main() {
     fmt.Println("Beginning diagnostics")
-
-    requestCodeMap["100"] = 0
-    requestCodeMap["200"] = 0
-    requestCodeMap["300"] = 0
-    requestCodeMap["400"] = 0
-    requestCodeMap["500"] = 0
-    requestCodeMap["error"] = 0
+    
+    Counter = counter.New()
+    Counter.AddKey("Total")
+    Counter.AddKey("100s")
+    Counter.AddKey("200s")
+    Counter.AddKey("300s")
+    Counter.AddKey("400s")
+    Counter.AddKey("500s")
+    Counter.AddKey("Errors")
 
     requestRate = flag.Int("rate", 1, "") 
 
@@ -184,5 +201,6 @@ func main() {
     go runTick()
     time.Sleep(time.Duration(*programRuntime) * time.Second)
     outputStatistics()
+    Counter.GoDump()
     os.Exit(1)
 }

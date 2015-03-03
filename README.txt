@@ -32,6 +32,8 @@ https://github.com/cihub/seelog/blob/master/doc.go#L57
 http://stackoverflow.com/questions/26611918/golang-postform-request-for-updating-one-of-the-resources-of-cloudfoundry-app
 https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Forms_in_HTML
 https://mmcgrana.github.io/2012/09/go-by-example-timers-and-tickers.html
+https://splice.com/blog/lesser-known-features-go-test/
+http://www.golang-book.com/12/index.htm
 chrome://settings/cookies
 ---------------------------------------------------------------------------------------------
 
@@ -109,6 +111,23 @@ Specifies if the authserver should attempt to load cookies from a previous auths
 
 -checkpoint-interval (go build && authserver -checkpoint-interval 15)
 Specifies how often authserver should backup dumpfile in seconds 
+
+Applicable loadgen flags include:
+
+-rate (go run loadgen.go -rate 100)
+Average rate of issued requests (per second)
+
+-burst (go run loadgen.go -burst 50)
+Number of concurrent requests to issue
+
+-timeout-ms (go run loadgen.go -timeout-ms 500)
+Maximum time in ms to wait for a response from external server
+
+-runtime (go run loadgen.go -runtime 10)
+Total runtime of loadgen.go
+
+-url (go run loadgen.og -url 'http://localhost:8080/time')
+Specifies the url to test
 
 
 NOTE: All files, by name, found in the ./Templates folder MUST be present in the specified

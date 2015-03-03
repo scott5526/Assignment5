@@ -401,7 +401,7 @@ func main() {
     fmt.Println("Starting new server")
 
     //Version output & port selection
-    version := flag.Bool("V", false, "Version 5.1") //Create a bool flag for version  
+    version := flag.Bool("V", false, "Version 5.2") //Create a bool flag for version  
     						    //and default to no false
 
     portNO = flag.Int("port", 8080, "")	    	    //Create a int flag for port selection
@@ -437,7 +437,7 @@ func main() {
     flag.Parse()
 
     if *version == true {		//If version outputting selected, output version and 
-        fmt.Println("Version 5.1")	//terminate program with 0 error code
+        fmt.Println("Version 5.2")	//terminate program with 0 error code
         os.Exit(0)
     }
 

@@ -1,0 +1,12 @@
+go run loadgen.go -rate=200 -burst=20 -timeout-ms=1000 -runtime=10
+
+go build && src -max-inflight=20 -avg-response-ms=500 -deviation-ms=300
+
+Total: 1980
+100s: 0
+200s: 373
+300s: 0
+400s: 0
+500s: 1590
+Errors: 0
+exit status 1
